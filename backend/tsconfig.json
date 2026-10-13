@@ -8,5 +8,7 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "drizzle.config.ts"]
+  "include": ["src", "drizzle.config.ts",  "../config/placeholders" // Add this line
+],
+  
 }

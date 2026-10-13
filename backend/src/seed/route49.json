@@ -1,0 +1,47 @@
+{
+  "routeNumber": "49",
+  "name": "Ayat - Megenagna",
+  "nameAm": "አያት - መገናኛ",
+  "directions": [
+    {
+      "directionName": "toward Megenagna",
+      "path": null,
+      "stops": [
+        { "placeName": "Ayat 49 Adebabay", "placeNameAm": "አያት 49 አደባባይ", "side": "toward Legehar", "location": [38.894720, 9.011007] },
+        { "placeName": "Ayat 49 Condominium", "placeNameAm": "አያት 49 ኮንዶሚኒየም", "side": "toward Legehar", "location": [38.894661, 9.018062] },
+        { "placeName": "Ayat Medhanialem", "placeNameAm": "አያት መድኃኒዓለም", "side": "toward Legehar", "location": [38.893196, 9.021717] },
+        { "placeName": "Ayat Gift Real Estate", "placeNameAm": "አያት ጊፍት ሪል ስቴት", "side": "toward Legehar", "location": [38.886685, 9.022055] },
+        { "placeName": "Ayat", "placeNameAm": "አያት", "side": "toward Legehar", "location": [38.877383, 9.021607] },
+        { "placeName": "Yanet Ayat", "placeNameAm": "ያኔት አያት", "side": "toward Legehar", "location": [38.871717, 9.021322] },
+        { "placeName": "Meri", "placeNameAm": "መሪ", "side": "toward Legehar", "location": [38.858534, 9.020756] },
+        { "placeName": "Yetebaberut", "placeNameAm": "የተባበሩት", "side": "toward Legehar", "location": [38.850630, 9.021187] },
+        { "placeName": "CMC Michael", "placeNameAm": "ሲኤምሲ ሚካኤል", "side": "toward Legehar", "location": [38.842544, 9.021616] },
+        { "placeName": "Civil Service", "placeNameAm": "ሲቪል ሰርቪስ", "side": "toward Legehar", "location": [38.828964, 9.021318] },
+        { "placeName": "Salitemhret", "placeNameAm": "ሳሊተ ምሕረት", "side": "toward Legehar", "location": [38.824194, 9.019423] },
+        { "placeName": "Gurd Shola", "placeNameAm": "ጉርድ ሾላ", "side": "toward Legehar", "location": [38.817136, 9.019769] },
+        { "placeName": "Century Mall", "placeNameAm": "ሴንቸሪ ሞል", "side": "toward Legehar", "location": [38.813298, 9.020088] },
+        { "placeName": "Megenagna", "placeNameAm": "መገናኛ", "side": "toward Legehar", "location": [38.799674, 9.019241] }
+      ]
+    },
+    {
+      "directionName": "toward Ayat",
+      "path": null,
+      "stops": [
+        { "placeName": "Megenagna", "placeNameAm": "መገናኛ", "side": "toward Ayat", "location": [38.801031, 9.019094] },
+        { "placeName": "Century Mall", "placeNameAm": "ሴንቸሪ ሞል", "side": "toward Ayat", "location": [38.813059, 9.019633] },
+        { "placeName": "Gurd Shola", "placeNameAm": "ጉርድ ሾላ", "side": "toward Ayat", "location": [38.817218, 9.019277] },
+        { "placeName": "Salitemhret", "placeNameAm": "ሳሊተ ምሕረት", "side": "toward Ayat", "location": [38.825069, 9.019329] },
+        { "placeName": "Civil Service", "placeNameAm": "ሲቪል ሰርቪስ", "side": "toward Ayat", "location": [38.831998, 9.021570] },
+        { "placeName": "CMC Michael", "placeNameAm": "ሲኤምሲ ሚካኤል", "side": "toward Ayat", "location": [38.840814, 9.021309] },
+        { "placeName": "Yetebaberut", "placeNameAm": "የተባበሩት", "side": "toward Ayat", "location": [38.850458, 9.020729] },
+        { "placeName": "Meri", "placeNameAm": "መሪ", "side": "toward Ayat", "location": [38.858572, 9.020340] },
+        { "placeName": "Yanet Ayat", "placeNameAm": "ያኔት አያት", "side": "toward Ayat", "location": [38.873362, 9.021089] },
+        { "placeName": "Ayat", "placeNameAm": "አያት", "side": "toward Ayat", "location": [38.877031, 9.021206] },
+        { "placeName": "Ayat Gift Real Estate", "placeNameAm": "አያት ጊፍት ሪል ስቴት", "side": "toward Ayat", "location": [38.885646, 9.021648] },
+        { "placeName": "Ayat Medhanialem", "placeNameAm": "አያት መድኃኒዓለም", "side": "toward Ayat", "location": [38.893121, 9.021535] },
+        { "placeName": "Ayat 49 Condominium", "placeNameAm": "አያት 49 ኮንዶሚኒየም", "side": "toward Ayat", "location": [38.894455, 9.018433] },
+        { "placeName": "Ayat 49 Adebabay", "placeNameAm": "አያት 49 አደባባይ", "side": "toward Ayat", "location": [38.894572, 9.010694] }
+      ]
+    }
+  ]
+}
