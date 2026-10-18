@@ -6,6 +6,7 @@ import {directionsRouter} from './bus_routes/directions.routes';
 import {assignmentsRouter} from './assignments/assignments.routes';
 import { trackingRouter } from './tracking/tracking.routes';
 import { arrivalsRouter } from './arrivals/arrivals.routes';
+import { tripsRouter } from './trips/trips.routes';
 
 export const app=express();
 app.use(express.json());
@@ -16,7 +17,8 @@ app.use( authRouter);
 app.use( directionsRouter);
 app.use( assignmentsRouter);
 app.use( trackingRouter);
-app.use(arrivalsRouter)
+app.use(arrivalsRouter);
+app.use(tripsRouter);
 
 
 app.get('/first', async (_req, res) => {
