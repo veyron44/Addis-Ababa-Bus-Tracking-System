@@ -10,8 +10,7 @@
     "db:migrate": "drizzle-kit migrate",
     "bootstrap": "tsx src/scripts/bootstrap.ts",
     "segments:update": "tsx src/scripts/update-segment-times.ts",
-    "test:rules": "tsx src/scripts/test-eta-rules.ts  && tsx src/scripts/test-departures-rules.ts && tsx src/scripts/test-segments-rules.ts",
-    "test": "npm run test:rules"
+    "test:rules": "tsx src/scripts/test-eta-rules.ts && tsx src/scripts/test-arrivals-rules.ts && tsx src/scripts/test-departures-rules.ts && tsx src/scripts/test-segments-rules.ts",    "test": "npm run test:rules"
   },
   "keywords": [],
   "author": "",
