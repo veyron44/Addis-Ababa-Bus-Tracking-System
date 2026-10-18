@@ -7,6 +7,7 @@ import {assignmentsRouter} from './assignments/assignments.routes';
 import { trackingRouter } from './tracking/tracking.routes';
 import { arrivalsRouter } from './arrivals/arrivals.routes';
 import { tripsRouter } from './trips/trips.routes';
+import { liveRouter } from './live/live.routes';
 
 export const app=express();
 app.use(express.json());
@@ -19,6 +20,7 @@ app.use( assignmentsRouter);
 app.use( trackingRouter);
 app.use(arrivalsRouter);
 app.use(tripsRouter);
+app.use(liveRouter);
 
 
 app.get('/first', async (_req, res) => {
