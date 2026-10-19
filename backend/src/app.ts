@@ -10,6 +10,7 @@ import { tripsRouter } from './trips/trips.routes';
 import { liveRouter } from './live/live.routes';
 import { adminRouter } from './admin/admin.routes';
 import { adminVehiclesRouter } from './admin_vehicles/admin_vehicles.routes';
+import { adminDriversRouter } from './admin_drivers/admin_drivers.routes';
 
 export const app=express();
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use(tripsRouter);
 app.use(liveRouter);
 app.use(adminRouter);
 app.use(adminVehiclesRouter);
+app.use(adminDriversRouter);
 
 
 app.get('/first', async (_req, res) => {
