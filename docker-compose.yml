@@ -16,6 +16,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    
+  backend:
+    build: ./backend
+    container_name: bus_backendd
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://Rahel:${POSTGRES_PASSWORD}@db:5432/bus_tracker
+      PORT: 3000
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+    ports:
+      - "3000:3000"
 
 volumes:
   db_data:
