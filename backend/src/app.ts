@@ -11,6 +11,8 @@ import { liveRouter } from './live/live.routes';
 import { adminRouter } from './admin/admin.routes';
 import { adminVehiclesRouter } from './admin_vehicles/admin_vehicles.routes';
 import { adminDriversRouter } from './admin_drivers/admin_drivers.routes';
+import { adminAssignmentsRouter } from './admin_assignments/admin_assignments.routes';
+
 
 export const app=express();
 app.use(express.json());
@@ -27,6 +29,7 @@ app.use(liveRouter);
 app.use(adminRouter);
 app.use(adminVehiclesRouter);
 app.use(adminDriversRouter);
+app.use(adminAssignmentsRouter);
 
 
 app.get('/first', async (_req, res) => {
