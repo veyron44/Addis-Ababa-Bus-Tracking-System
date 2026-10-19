@@ -9,6 +9,7 @@ import { arrivalsRouter } from './arrivals/arrivals.routes';
 import { tripsRouter } from './trips/trips.routes';
 import { liveRouter } from './live/live.routes';
 import { adminRouter } from './admin/admin.routes';
+import { adminVehiclesRouter } from './admin_vehicles/admin_vehicles.routes';
 
 export const app=express();
 app.use(express.json());
@@ -23,6 +24,7 @@ app.use(arrivalsRouter);
 app.use(tripsRouter);
 app.use(liveRouter);
 app.use(adminRouter);
+app.use(adminVehiclesRouter);
 
 
 app.get('/first', async (_req, res) => {
