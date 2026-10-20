@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { pool } from './db/index';
 import { stopsRouter } from './stops/stops.routes';
 import { authRouter } from './auth/auth.routes';
@@ -15,6 +16,7 @@ import { adminAssignmentsRouter } from './admin_assignments/admin_assignments.ro
 
 
 export const app=express();
+app.use(cors());
 app.use(express.json());
 
 
@@ -32,7 +34,7 @@ app.use(adminDriversRouter);
 app.use(adminAssignmentsRouter);
 
 
-app.get('/first', async (_req, res) => {
+app.get('/health', async (_req, res) => {
     try {
         await pool.query('SELECT 1');
         res.json({ status: 'ok', database: 'ok' });

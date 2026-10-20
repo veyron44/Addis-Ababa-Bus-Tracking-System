@@ -1,5 +1,6 @@
 import { findTripRows } from './trips.repository';
 import { getArrivals } from '../arrivals/arrivals.service';
+import { sortOptions } from './trips.rules';
 
 // Same codes as the stop screen.
 type NextBus = {
@@ -97,16 +98,14 @@ export async function findTrips(from: string, to: string): Promise<Trip[]> {
   }
 
   const trips = [...groups.values()];
-  for (const trip of trips) {
-    trip.options.sort((x, y) => x.routeNumber.localeCompare(y.routeNumber, undefined, { numeric: true }));
-  }
 
-  // One arrivals lookup per waiting stop.
+  // One arrivals lookup per waiting stop. Then the soonest bus goes first.
   for (const trip of trips) {
     const result = await getArrivals(trip.waitAt.stopId, null);
     for (const option of trip.options) {
       option.nextBus = pickNextBus(result, option.routeNumber, option.directionName);
     }
+    trip.options = sortOptions(trip.options);
   }
   return trips;
 }

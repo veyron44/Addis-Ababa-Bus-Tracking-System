@@ -4,7 +4,8 @@ import { db, pool } from '../db/index';
 import { assignments, drivers, routeDirections, routes, vehicles } from '../db/schema';
 
 async function main() {
-  
+  // Usage: npx tsx src/scripts/createshift.ts [username] [routeNumber] [directionName] [plate]
+  // Defaults: bus1, route 61 toward Legehar (it starts at Ayat), bus AA-1234.
   const [
     username = 'bus1',
     routeNumber = '61',
@@ -14,7 +15,7 @@ async function main() {
 
   const [driver] = await db.select().from(drivers).where(eq(drivers.username, username)).limit(1);
   if (!driver) {
-    console.error(`No driver "${username}". Create one with create-driver.ts first.`);
+    console.error(`No driver "${username}". Create one with createdriver.ts first.`);
     process.exitCode = 1;
     return;
   }
@@ -34,7 +35,7 @@ async function main() {
   await db.insert(vehicles).values({ plate }).onConflictDoNothing();
   const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.plate, plate)).limit(1);
 
-  // End any older unfinished shift for this crew, so the script can be rerun.
+  // End any older unfinished shift for this driver, so the script can be rerun.
   await db
     .update(assignments)
     .set({ status: 'ended', endedAt: new Date() })
