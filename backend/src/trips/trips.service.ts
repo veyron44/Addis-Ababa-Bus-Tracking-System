@@ -5,13 +5,15 @@ import { sortOptions } from './trips.rules';
 // Same codes as the stop screen.
 type NextBus = {
   busId: number;
-  source: 'arrival' | 'departure'; // 'departure' = a bus leaving from this terminal
+  source: 'arrival' | 'departure' | 'upcoming'; // departure = leaving this terminal; upcoming = not on the road yet
   kind: string | null; // departures only: on_the_road, waiting, not_started
   code: string;
   reason: string | null;
   lowMin: number | null;
   highMin: number | null;
   boarding: boolean;
+  lessCertain: boolean; // true for a bus that is not on the road yet
+  standingMin: number | null; // arrivals only: standing still this long
   crowding: unknown;
 };
 
@@ -30,7 +32,8 @@ type Trip = {
 };
 
 // Soonest bus of one route direction at one stop, from the arrivals answer.
-// Buses on the road first; at a terminal, the departures list is used instead.
+// Buses on the road first; at a terminal, the departures list; else a bus that is not on the road
+// yet (marked less certain).
 function pickNextBus(
   arrivalsResult: Awaited<ReturnType<typeof getArrivals>>,
   routeNumber: string,
@@ -52,6 +55,8 @@ function pickNextBus(
       lowMin: arrival.lowMin,
       highMin: arrival.highMin,
       boarding: false,
+      lessCertain: false,
+      standingMin: arrival.standingMin,
       crowding: arrival.crowding,
     };
   }
@@ -67,7 +72,26 @@ function pickNextBus(
       lowMin: departure.lowMin,
       highMin: departure.highMin,
       boarding: departure.boarding,
+      lessCertain: false,
+      standingMin: null,
       crowding: departure.crowding,
+    };
+  }
+
+  const upcoming = arrivalsResult.upcoming.find(same);
+  if (upcoming) {
+    return {
+      busId: upcoming.busId,
+      source: 'upcoming',
+      kind: upcoming.kind,
+      code: 'estimate',
+      reason: null,
+      lowMin: upcoming.lowMin,
+      highMin: upcoming.highMin,
+      boarding: false,
+      lessCertain: true,
+      standingMin: null,
+      crowding: upcoming.crowding,
     };
   }
   return null;
