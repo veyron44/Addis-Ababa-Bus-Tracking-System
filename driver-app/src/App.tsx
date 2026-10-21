@@ -1,122 +1,121 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { apiBase, getHealth, type Health } from './api';
+import { t } from './strings';
 
-function App() {
-  const [count, setCount] = useState(0)
+type Fix = { lat: number; lng: number; acc: number };
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function locationError(err: GeolocationPositionError): string {
+  if (err.code === err.PERMISSION_DENIED) return t.denied;
+  if (err.code === err.POSITION_UNAVAILABLE) return t.unavailable;
+  return t.timeout;
 }
 
-export default App
+export default function App() {
+  const [health, setHealth] = useState<Health | null>(null);
+  const [healthError, setHealthError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(true);
+
+  const [fix, setFix] = useState<Fix | null>(null);
+  const [locError, setLocError] = useState<string | null>(null);
+  const [asking, setAsking] = useState(false);
+
+  function check() {
+    setChecking(true);
+    setHealthError(null);
+    getHealth()
+      .then(setHealth)
+      .catch((e: Error) => {
+        setHealth(null);
+        setHealthError(e.message);
+      })
+      .finally(() => setChecking(false));
+  }
+
+  useEffect(check, []);
+
+  function getLocation() {
+    setLocError(null);
+    if (!window.isSecureContext || !navigator.geolocation) {
+      setLocError(t.notSecure);
+      return;
+    }
+    setAsking(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setFix({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy });
+        setAsking(false);
+      },
+      (err) => {
+        setLocError(locationError(err));
+        setAsking(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  }
+
+  return (
+    <div className="page">
+      <h1>{t.title}</h1>
+
+      <div className="card">
+        <h2>{t.backend}</h2>
+        <div className="row">
+          <span>{t.address}</span>
+          <span>{apiBase}</span>
+        </div>
+        <div className="row">
+          <span>{t.backend}</span>
+          {checking ? (
+            <span>{t.checking}</span>
+          ) : health ? (
+            <span className="ok">{t.reachable}</span>
+          ) : (
+            <span className="bad">{t.notReachable}</span>
+          )}
+        </div>
+        {health && (
+          <div className="row">
+            <span>{t.database}</span>
+            <span className={health.database === 'ok' ? 'ok' : 'bad'}>{health.database}</span>
+          </div>
+        )}
+        {healthError && <div className="error">{healthError}</div>}
+        <button className="btn" onClick={check} disabled={checking}>
+          {t.retry}
+        </button>
+      </div>
+
+      <div className="card">
+        <h2>{t.location}</h2>
+        <div className="row">
+          <span>{t.secure}</span>
+          <span className={window.isSecureContext ? 'ok' : 'bad'}>
+            {window.isSecureContext ? t.yes : t.no}
+          </span>
+        </div>
+        {fix && (
+          <>
+            <div className="row">
+              <span>{t.latitude}</span>
+              <span>{fix.lat.toFixed(6)}</span>
+            </div>
+            <div className="row">
+              <span>{t.longitude}</span>
+              <span>{fix.lng.toFixed(6)}</span>
+            </div>
+            <div className="row">
+              <span>{t.accuracy}</span>
+              <span>
+                {Math.round(fix.acc)} {t.metres}
+              </span>
+            </div>
+          </>
+        )}
+        {locError && <div className="error">{locError}</div>}
+        <button className="btn" onClick={getLocation} disabled={asking}>
+          {asking ? t.asking : t.getLocation}
+        </button>
+      </div>
+    </div>
+  );
+}
