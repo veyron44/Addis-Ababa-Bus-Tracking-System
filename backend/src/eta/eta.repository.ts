@@ -35,6 +35,24 @@ export async function getStopsOnPath(
   };
 }
 
+// Measured travel times (seconds) between neighbouring stops for one day type and half-hour slot.
+// Only measured rows count. Guesses are not used. Keyed "fromStopId-toStopId".
+export async function getMeasuredSegments(
+  stopIds: number[],
+  dayType: 'weekday' | 'weekend',
+  bucket: number,
+): Promise<Map<string, number>> {
+  if (stopIds.length === 0) return new Map();
+  const res = await db.execute(sql`
+    SELECT from_stop_id, to_stop_id, seconds
+    FROM segment_times
+    WHERE measured = true
+      AND day_type = ${dayType}::day_type
+      AND time_bucket = ${bucket}
+      AND from_stop_id IN ${stopIds}`);
+  return new Map((res.rows as any[]).map((r) => [`${r.from_stop_id}-${r.to_stop_id}`, Number(r.seconds)]));
+}
+
 // Newest first. Stopped points are kept: they repeat the old progress, which gives speed 0.
 export async function getRecentPoints(
   assignmentId: number,

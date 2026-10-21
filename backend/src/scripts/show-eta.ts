@@ -29,15 +29,18 @@ async function main() {
       ? 'Rolling speed: not enough points'
       : `Rolling speed: ${bus.speedKmh.toFixed(1)} km/h (over ${bus.speedSpanSec!.toFixed(0)} s)`,
   );
+  console.log(
+    bus.standingMin === null ? 'Standing still: no' : `Standing still: about ${bus.standingMin} min`,
+  );
   console.log(`Stops ahead: ${arrivals.length}`);
-  console.log('order  distance  eta                       stop');
+  console.log('order  distance  eta                                    stop');
   for (const a of arrivals.slice(0, 10)) {
     let eta: string;
     if (a.code === 'no_estimate') eta = 'no estimate (' + a.reason + ')';
     else if (a.code === 'arriving') eta = 'arriving';
-    else eta = `about ${a.lowMin}-${a.highMin} min (${a.basis})`;
+    else eta = `about ${a.lowMin}-${a.highMin} min (${a.basis}, ${Math.round(a.learnedShare * 100)}% measured)`;
     console.log(
-      `${String(a.stopOrder).padStart(5)}  ${(a.distanceM / 1000).toFixed(2).padStart(6)} km  ${eta.padEnd(24)}  ${a.placeName}` +
+      `${String(a.stopOrder).padStart(5)}  ${(a.distanceM / 1000).toFixed(2).padStart(6)} km  ${eta.padEnd(38)}  ${a.placeName}` +
         (a.side ? ` (${a.side})` : ''),
     );
   }

@@ -1,4 +1,14 @@
-import { rollingSpeed, distanceToStop, isFresh, estimateEta, toMinutes } from '../eta/eta.rules';
+import {
+  rollingSpeed,
+  distanceToStop,
+  isFresh,
+  estimateEta,
+  toMinutes,
+  buildSegments,
+  farSeconds,
+  standingSec,
+  type Segment,
+} from '../eta/eta.rules';
 
 // No database needed.
 let failed = 0;
@@ -77,6 +87,66 @@ check('20 480-720 s shows 8-12 min', m.lowMin === 8 && m.highMin === 12, `got ${
 
 const m2 = toMinutes(20, 50);
 check('21 tiny range never below 1 min', m2.lowMin === 1 && m2.highMin === 1, `got ${m2.lowMin}-${m2.highMin}`);
+
+// ---- Measured segment times ----
+const seg = (startM: number, endM: number, seconds: number | null): Segment => ({ startM, endM, seconds });
+
+const built = buildSegments(
+  [{ stopId: 1, progress: 0 }, { stopId: 2, progress: 0.5 }, { stopId: 3, progress: 1 }],
+  LEN,
+  new Map([['1-2', 300]]),
+);
+check('22 segments are built between neighbouring stops, with the measured time where there is one',
+  built.length === 2 && built[0].seconds === 300 && built[1].seconds === null && built[1].startM === 5000 && built[1].endM === 10000,
+  JSON.stringify(built));
+
+let f = farSeconds(0, 4000, [seg(0, 10000, null)]);
+check('23 no measured time: typical speed, 4 km = 720 s', near(f.seconds, 720, 1) && f.learnedM === 0, `got ${f.seconds.toFixed(0)}`);
+
+f = farSeconds(0, 5000, [seg(0, 5000, 300)]);
+check('24 a whole measured stretch: its time (300 s)', near(f.seconds, 300, 0.01) && f.learnedM === 5000, `got ${f.seconds.toFixed(0)}`);
+
+f = farSeconds(2500, 5000, [seg(0, 5000, 300)]);
+check('25 half of a measured stretch: half its time (150 s)', near(f.seconds, 150, 0.01), `got ${f.seconds.toFixed(0)}`);
+
+f = farSeconds(0, 10000, [seg(0, 5000, 300), seg(5000, 10000, null)]);
+check('26 measured then unmeasured: 300 + 900 s', near(f.seconds, 1200, 1) && f.learnedM === 5000, `got ${f.seconds.toFixed(0)}`);
+
+f = farSeconds(0, 12000, [seg(0, 10000, 600)]);
+check('27 road beyond the last stretch uses typical speed: 600 + 360 s', near(f.seconds, 960, 1), `got ${f.seconds.toFixed(0)}`);
+
+f = farSeconds(5000, 5000, [seg(0, 10000, 600)]);
+check('28 zero distance is 0 s', f.seconds === 0);
+
+e = estimateEta(5000, 20, { busM: 0, segments: [seg(0, 5000, 300)] });
+check('29 near 1.5 km at live speed (270 s) + far 3.5 km at measured pace (210 s) = 480 s, all learned',
+  near(e.seconds, 480, 1) && e.learnedShare === 1 && e.basis === 'live', `got ${e.seconds.toFixed(0)} share ${e.learnedShare}`);
+
+e = estimateEta(5000, 20, { busM: 0, segments: [seg(0, 5000, null)] });
+const plain = estimateEta(5000, 20);
+check('30 stretches without measured times give the same answer as before', near(e.seconds, plain.seconds, 0.01) && e.learnedShare === 0,
+  `got ${e.seconds.toFixed(0)} vs ${plain.seconds.toFixed(0)}`);
+
+e = estimateEta(1000, 20, { busM: 0, segments: [seg(0, 5000, 300)] });
+check('31 a stop inside the near 1.5 km ignores the measured times', near(e.seconds, 180, 1) && e.learnedShare === 0, `got ${e.seconds.toFixed(0)}`);
+
+e = estimateEta(5000, 20, { busM: 2000, segments: [seg(0, 2000, null), seg(2000, 8000, 360)] });
+check('32 a bus part-way along the road: far part measured from where it is (360 s per 6 km)',
+  near(e.seconds, 270 + ((5000 - 1500) / 6000) * 360, 1), `got ${e.seconds.toFixed(0)}`);
+
+// ---- Standing still ----
+const stood = Array.from({ length: 31 }, (_, i) => ({ timeMs: i * 10_000, progress: 0.4 + (i % 2) * 0.0001 }));
+let sd = standingSec(stood, LEN);
+check('33 standing 5 minutes (GPS noise of a few metres) reads about 300 s', sd !== null && near(sd, 300, 1), `got ${sd}`);
+
+sd = standingSec(steady(10, 20), LEN);
+check('34 a moving bus is not standing (0 s)', sd === 0, `got ${sd}`);
+
+const movedThenStopped = [...steady(10, 20), ...Array.from({ length: 6 }, (_, i) => ({ timeMs: 100_000 + i * 10_000, progress: 0.2 + 9 * stepProgress(20, 10) + 0.0001 }))];
+sd = standingSec(movedThenStopped, LEN);
+check('35 moved, then stopped 50 s ago: counts only the stop', sd !== null && near(sd, 50, 10), `got ${sd}`);
+
+check('36 one point gives null', standingSec(steady(1, 20), LEN) === null);
 
 console.log(failed === 0 ? '\nAll passed.' : `\n${failed} FAILED.`);
 process.exitCode = failed === 0 ? 0 : 1;
