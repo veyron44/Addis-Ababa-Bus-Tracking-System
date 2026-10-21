@@ -1,14 +1,16 @@
-// ALL VALUES HERE ARE PLACEHOLDERS (estimates, not measurements)
+// ALL VALUES HERE ARE PLACEHOLDERS (estimates, not measurements).
+// Replace them with measured values after the real test ride.
+// Never type these numbers inside logic. Import them from this file.
 
 export const PLACEHOLDERS = {
   // --- Terminal behaviour ---
   terminalLayoverMin: 10,       // typical wait at a terminal
-  maxWaitMin: 25,               // longest expected wait
+  maxWaitMin: 25,               // longest expected wait (owner's estimate)
   terminalRadiusM: 100,         // within this distance the bus is "at terminal"
   terminalLeaveRadiusM: 200,    // a bus farther than this from the terminal it waited at has left
   flipMinPings: 3,              // points of evidence needed before the direction flips
   flipTrailPings: 6,            // the flip looks at the last 6 points at most
-  flipMinRiseM: 50,             // progress on the opposite road must rise  this much
+  flipMinRiseM: 50,             // progress on the opposite road must rise (and the old fall) this much
   flipSearchM: 2000,            // how much of each road is searched for the evidence
   flipGiveUpMin: 15,            // after this long without evidence, stop waiting for a flip
   arrivalMinProgress: 0.8,      // a bus counts as arriving only after this much of its road is done
@@ -61,6 +63,16 @@ export const PLACEHOLDERS = {
   arrivingSec: 60,              // an ETA of this or less reads "arriving"
   nearPartKm: 1.5,              // next stretch that uses live speed
 
+  // --- A bus that is standing still (shown to riders as "standing for N min") ---
+  standingStillM: 30,           // a bus that moved less than this over the lookback is standing
+  standingFlagMinSec: 120,      // shown only after standing at least this long (not for a red light)
+  standingLookbackPoints: 60,   // newest points read to find how long it has stood (about 10 min)
+
+  // --- Buses that are not on the road at this stop yet (waiting at the start or coming back) ---
+  upcomingMax: 5,               // at most this many are listed
+  upcomingMaxMin: 60,           // not listed when they are more than this far away
+  departingSoonMaxMin: 3,       // "departing soon" is counted as up to this many minutes more
+
   // --- Typical segment speeds (used only to fill segment_times with placeholders) ---
   rushHourSpeedKmh: 8,
   middaySpeedKmh: 20,
@@ -72,4 +84,8 @@ export const PLACEHOLDERS = {
   segmentMinSpeedKmh: 2,        // a stretch driven slower than this on average was a breakdown or a standstill
   segmentWarningPadSec: 120,    // a warning excludes this much time before and after it
   localUtcOffsetHours: 3,       // Addis Ababa is UTC+3, no daylight saving (decides the day type and slot)
+
+  // --- Nightly jobs (segment times, then cleaning old points) ---
+  nightlyHourLocal: 3,          // run once a day, during this local hour (03:00 to 04:00)
+  pingKeepDays: 90,             // location points older than this are deleted (never less than segmentLookbackDays)
 } as const;

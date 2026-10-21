@@ -4,9 +4,9 @@ import { PLACEHOLDERS } from '../config/placeholders';
 import { runSegmentUpdate } from '../segments/segments.service';
 
 // Usage:  npx tsx src/scripts/update-segment-times.ts [--apply] [--days 60]
-// Dry run by default: nothing is written. --apply saves the medians; run it once a night
-// (Task Scheduler or cron). Never --apply on simulator data you care about: the fake buses
-// would become "measured" times.
+// Dry run by default: nothing is written. --apply saves the medians. The server runs this by
+// itself every night when NIGHTLY_JOBS=on. Never --apply on simulator data you care about: the
+// fake buses would become "measured" times.
 
 async function main() {
   const args = process.argv.slice(2);
