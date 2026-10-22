@@ -1,6 +1,8 @@
 // Every visible word lives here, so a translation later touches one file.
 export const t = {
-  title: 'Bus Driver',
+  title: 'Bus Crew',
+
+  // Day 0 check page
   backend: 'Backend',
   checking: 'Checking...',
   reachable: 'Reachable',
@@ -22,4 +24,40 @@ export const t = {
   unavailable: 'The phone could not find its position. Try outside.',
   timeout: 'Finding the position took too long. Try again.',
   retry: 'Check again',
+
+  // Login
+  username: 'Username',
+  password: 'Password',
+  login: 'Log in',
+  loggingIn: 'Logging in...',
+  enterBoth: 'Enter your username and password.',
+
+  // Shift
+  yourShift: 'Your shift',
+  bus: 'Bus',
+  route: 'Route',
+  direction: 'Direction',
+  status: 'Status',
+  changeRoute: 'Change route',
+  chooseRoute: 'Choose a route',
+  cancel: 'Cancel',
+  currentChoice: 'current',
+  startShift: 'Start shift',
+  starting: 'Starting...',
+  noShiftTitle: 'No shift assigned',
+  noShiftText: 'Ask your dispatcher to assign you a shift.',
+  refresh: 'Refresh',
+  logout: 'Log out',
+  loading: 'Loading...',
+  offline: 'No connection. Retrying.',
+  hello: 'Hello',
+
+  // Running (placeholder until GPS is added)
+  running: 'Shift running',
+  runningNote: 'Sending your position starts on the next step.',
+  endShift: 'End shift',
+  endAsk: 'End this shift?',
+  ending: 'Ending...',
+  sure: 'Yes, end it',
+  no2: 'No',
 };

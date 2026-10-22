@@ -36,3 +36,60 @@ h1 { font-size: 26px; margin: 8px 0 16px; }
 }
 .btn:disabled { opacity: 0.6; }
 .error { color: var(--bad); margin-top: 8px; }
+
+/* ---- Day 1: forms, chips, buttons ---- */
+.muted { color: var(--muted); }
+.field { display: block; margin-bottom: 12px; }
+.field span { display: block; color: var(--muted); margin-bottom: 4px; }
+.field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 12px;
+  font-size: 18px;
+  border: 1px solid #c9ced6;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+}
+.chip {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #e8efff;
+  color: var(--accent);
+  font-weight: 600;
+}
+.btn.secondary { background: #e9ecf1; color: var(--text); }
+.btn.green { background: var(--ok); }
+.btn.red { background: var(--bad); }
+.option {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  text-align: left;
+  padding: 0 14px;
+  margin-bottom: 8px;
+  font-size: 18px;
+  border: 1px solid #c9ced6;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+}
+.option.current { border-color: var(--accent); background: #f0f5ff; }
+.banner {
+  background: #fff4e5;
+  color: #8a4b00;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+.link {
+  display: block;
+  margin: 8px auto 24px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 16px;
+  text-decoration: underline;
+  min-height: 44px;
+}
