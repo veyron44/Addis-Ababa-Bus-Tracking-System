@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { sql } from 'drizzle-orm';
 import { db, pool } from '../db/index';
 
-type Coord = [number, number]; // [lng, lat]
+type Coord = [number, number]; // [longitude, latitude]
 type SimPoint = {
   lng: number;
   lat: number;
@@ -10,19 +10,17 @@ type SimPoint = {
   accuracy: number;
   progress: number;
   crowd?: string;
-  crowdFrom?: number; // first point of this report
+  crowdFrom?: number;
 };
 
-// Simulator settings
-const TICK_SEC = 10;          // GPS point interval
-const BATCH_SIZE = 3;         // points per batch
-const BASE_SPEED_KMH = 20;    // km/h
-const NOISE_M = 5;            // GPS noise in meters
-const SEED = 42;              // repeatable runs
-const LEAVE_M = 600;          // distance driven after waiting
+const TICK_SEC = 10;
+const BATCH_SIZE = 3;         // 3 points = 30 s of road per batch
+const BASE_SPEED_KMH = 20;
+const NOISE_M = 5;
+const SEED = 42;              // same seed, same journey
+const LEAVE_M = 600;
 const CROWD_VALUES = ['not_reported', 'seats_available', 'standing_only', 'full'];
 
-// Seeded random values keep runs repeatable.
 function makeRandom(seed: number) {
   let a = seed;
   return () => {
@@ -33,7 +31,6 @@ function makeRandom(seed: number) {
   };
 }
 
-// Generate normally distributed values.
 function makeGaussian(rand: () => number) {
   return () => {
     const u = Math.max(rand(), 1e-9);
@@ -41,7 +38,6 @@ function makeGaussian(rand: () => number) {
   };
 }
 
-// Distance between coordinates in meters.
 function meters(a: Coord, b: Coord): number {
   const midLat = ((a[1] + b[1]) / 2) * (Math.PI / 180);
   const dx = (b[0] - a[0]) * 111320 * Math.cos(midLat);
@@ -49,7 +45,6 @@ function meters(a: Coord, b: Coord): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-// Add GPS noise to a coordinate.
 function jitter(c: Coord, gaussian: () => number) {
   return {
     lng: c[0] + (gaussian() * NOISE_M) / (111320 * Math.cos(c[1] * (Math.PI / 180))),
@@ -69,7 +64,6 @@ async function loadPath(routeNumber: string, directionName: string): Promise<Coo
   return JSON.parse(row.g).coordinates as Coord[];
 }
 
-// Load the route in the opposite direction.
 async function loadOtherPath(routeNumber: string, directionName: string): Promise<Coord[] | null> {
   const result = await db.execute(sql`
     SELECT ST_AsGeoJSON(rd.path) AS g
@@ -82,7 +76,6 @@ async function loadOtherPath(routeNumber: string, directionName: string): Promis
   return JSON.parse(row.g).coordinates as Coord[];
 }
 
-// Get a point at a given distance along the route.
 function makeWalker(path: Coord[]) {
   const cumulative: number[] = [0];
   for (let i = 1; i < path.length; i++) {
@@ -103,7 +96,6 @@ function makeWalker(path: Coord[]) {
   return { total, pointAt };
 }
 
-// Generate GPS points for the trip.
 function simulate(path: Coord[]): { points: SimPoint[]; total: number } {
   const { total, pointAt } = makeWalker(path);
   const rand = makeRandom(SEED);
@@ -111,8 +103,8 @@ function simulate(path: Coord[]): { points: SimPoint[]; total: number } {
 
   const points: SimPoint[] = [];
   let distance = 0;
-  let factor = 1;     // traffic factor
-  let stopTicks = 0;  // remaining stop ticks
+  let factor = 1;     // traffic: 1 = normal, lower = slower
+  let stopTicks = 0;
 
   while (distance < total) {
     factor += (rand() - 0.5) * 0.3;
@@ -136,7 +128,6 @@ function simulate(path: Coord[]): { points: SimPoint[]; total: number } {
   return { points, total };
 }
 
-// Generate points while the bus waits at the terminal.
 function waitPoints(end: Coord, waitMin: number, crowd?: string): SimPoint[] {
   const rand = makeRandom(SEED + 1);
   const gaussian = makeGaussian(rand);
@@ -154,7 +145,6 @@ function waitPoints(end: Coord, waitMin: number, crowd?: string): SimPoint[] {
   return out;
 }
 
-// Generate points as the bus drives away.
 function drivePoints(
   pointAt: (d: number) => Coord,
   lengthM: number,
@@ -177,14 +167,12 @@ function drivePoints(
   return out;
 }
 
-// Wrong-way and off-path scenarios
-const WRONG_WAY_AT = 0.4;     // turn-back point
-const WRONG_WAY_TICKS = 9;    // ticks in each direction
-const OFF_PATH_AT = 0.7;      // point where it leaves the road
-const OFF_PATH_TICKS = 5;     // ticks off the road
-const OFF_PATH_M = 300;       // distance from the road in meters
-
-// Add a short wrong-way stretch, then return to the same spot.
+// ---- SCENARIO HELPERS START (wrong way and off path) ----
+const WRONG_WAY_AT = 0.4;
+const WRONG_WAY_TICKS = 9;    // 90 s driving back, then 90 s driving forward to the same spot
+const OFF_PATH_AT = 0.7;
+const OFF_PATH_TICKS = 5;
+const OFF_PATH_M = 300;
 
 function addWrongWay(points: SimPoint[], path: Coord[]): number {
   const { total, pointAt } = makeWalker(path);
@@ -204,13 +192,11 @@ function addWrongWay(points: SimPoint[], path: Coord[]): number {
       progress: d / total,
     });
   };
-  for (let k = 1; k <= WRONG_WAY_TICKS; k++) addAt(k);         
-  for (let k = WRONG_WAY_TICKS - 1; k >= 0; k--) addAt(k);     
+  for (let k = 1; k <= WRONG_WAY_TICKS; k++) addAt(k);
+  for (let k = WRONG_WAY_TICKS - 1; k >= 0; k--) addAt(k);
   points.splice(i0 + 1, 0, ...extra);
   return extra.length;
 }
-
-// Move some GPS points away from the road without changing progress.
 
 function addOffPath(points: SimPoint[], path: Coord[]): number {
   const { total, pointAt } = makeWalker(path);
@@ -233,9 +219,8 @@ function addOffPath(points: SimPoint[], path: Coord[]): number {
   }
   return moved;
 }
+// ---- SCENARIO HELPERS END ----
 
-
-// Server requests
 const BASE_URL = process.env.API_URL ?? 'http://localhost:3000';
 
 async function api(method: string, urlPath: string, token?: string, body?: unknown) {
@@ -249,7 +234,7 @@ async function api(method: string, urlPath: string, token?: string, body?: unkno
   });
   const text = await res.text();
   let data: any = text;
-  try { data = JSON.parse(text); } catch { /* Keep non-JSON responses as text. */ }
+  try { data = JSON.parse(text); } catch { /* not JSON, keep the text */ }
   return { status: res.status, data };
 }
 
@@ -258,7 +243,6 @@ function flag(args: string[], name: string, fallback: string): string {
   return i >= 0 && args[i + 1] ? args[i + 1] : fallback;
 }
 
-// Print simulated points without sending them.
 async function runPrint(args: string[]) {
   const [routeNumber = '61', directionName = 'toward Legehar', delayArg = '0'] = args;
   const delayMs = Number(delayArg);
@@ -289,16 +273,12 @@ async function runPrint(args: string[]) {
   console.log(`Arrived at the terminal. ${points.length} points, ${minutes.toFixed(1)} min.`);
 }
 
-// Log in, start a shift, and send points to /pings.
 async function runSend(args: string[]) {
   const username = flag(args, '--user', 'bus1');
   const password = flag(args, '--pass', 'test1234');
   const delayMs = Number(flag(args, '--delay', '200'));
-  // Simulate a phone clock offset.
   const clockOffsetMs = Number(flag(args, '--clock-offset-min', '0')) * 60_000;
-  // Add bad GPS data and resend a batch.
   const noisy = args.includes('--noisy');
-  // Wait at the terminal, then leave.
   const waitMin = Number(flag(args, '--wait-min', '0'));
   const stay = args.includes('--stay');         // wait, but never leave
   const detour = args.includes('--detour');     // leave in a direction that is on neither road
@@ -306,12 +286,10 @@ async function runSend(args: string[]) {
   const tap = args.includes('--tap');           // the crew taps "Start return trip" while waiting
   const wrongWay = args.includes('--wrong-way'); // mid-road the bus turns back for 90 s, then returns
   const offPath = args.includes('--off-path');   // the bus drifts 300 m sideways for 50 s
-  // Crowding reported at the terminal.
   const crowd = flag(args, '--crowd', '');
-  // Crowding reported during the trip.
   const crowdTrip = flag(args, '--crowd-trip', '');
-  // Stop at this percentage of the route.
   const stopAt = Number(flag(args, '--stop-at', '0'));
+  const live = args.includes('--live');
 
   if (crowd && !CROWD_VALUES.includes(crowd)) {
     console.error(`--crowd must be one of: ${CROWD_VALUES.join(', ')}`);
@@ -363,13 +341,12 @@ async function runSend(args: string[]) {
   }
 
   const sim = simulate(path);
-  if (offPath) addOffPath(sim.points, path);
-  if (wrongWay) addWrongWay(sim.points, path);
+  if (offPath) addOffPath(sim.points, path);       // first: it works by position in the trip
+  if (wrongWay) addWrongWay(sim.points, path);     // second: it inserts extra points
   const total = sim.total;
   const tripCount = sim.points.length;
   const crowdOrUndefined = crowd || undefined;
 
-  // Simulate the terminal wait and departure.
   let tail: SimPoint[] = [];
   if (waitMin > 0) {
     const end = path[path.length - 1];
@@ -406,14 +383,12 @@ async function runSend(args: string[]) {
   const points = sim.points.concat(tail);
   if (stopAt > 0) {
     const cut = points.findIndex((p, i) => i < tripCount && p.progress >= stopAt / 100);
-    if (cut > 0) points.length = cut;
+    if (cut > 0) points.length = cut; // everything after the stop is dropped, the wait too
   }
   if (noisy) points.forEach((p, i) => { if (i % 40 === 20) p.accuracy = 120; });
-  // Add crowding reports from 30% of the route.
   if (crowdTrip) {
     points.forEach((p, i) => { if (i < tripCount && p.progress >= 0.3) p.crowd = crowdTrip; });
   }
-  // Keep the start time of each crowding report.
   points.forEach((p, i) => {
     if (!p.crowd) return;
     const prev = points[i - 1];
@@ -435,15 +410,22 @@ async function runSend(args: string[]) {
       (offPath ? ' The bus drifts 300 m off the road at 70%.' : '') +
       (crowd ? ` Crowding at the terminal: ${crowd}.` : '') +
       (crowdTrip ? ` Crowding on the road: ${crowdTrip}.` : '') +
-      (stopAt ? ` Stops at ${stopAt}% of the road and stays running.` : ''),
+      (stopAt ? ` Stops at ${stopAt}% of the road and stays running.` : '') +
+      (live
+        ? ` LIVE: one batch every ${BATCH_SIZE * TICK_SEC} s in real time` +
+          (stopAt ? ', then it holds still until you press Ctrl+C.' : '.')
+        : ''),
   );
+  if (live && args.includes('--delay')) console.log('  (--delay is ignored in --live mode.)');
 
-  // Use the phone’s clock, including any offset.
   const phoneNow = () => Date.now() + clockOffsetMs;
   const lastTime = phoneNow();
-  // Space earlier points 10 seconds apart.
+  // Live: a batch's last point is "now" when the batch is sent.
+  const liveOrigin = lastTime - (BATCH_SIZE - 1) * TICK_SEC * 1000;
   const timeOf = (idx: number) =>
-    new Date(lastTime - (points.length - 1 - idx) * TICK_SEC * 1000).toISOString();
+    live
+      ? new Date(liveOrigin + idx * TICK_SEC * 1000).toISOString()
+      : new Date(lastTime - (points.length - 1 - idx) * TICK_SEC * 1000).toISOString();
 
   const totals = { saved: 0, futureTime: 0, poorAccuracy: 0, duplicate: 0, events: 0, flips: 0 };
   let clockOffsetSec = 0;
@@ -486,6 +468,7 @@ async function runSend(args: string[]) {
     return true;
   }
 
+  const liveWallStart = Date.now();
   for (let i = 0; i < points.length; i += BATCH_SIZE) {
     const batch: any[] = points.slice(i, i + BATCH_SIZE).map((p, k) => ({
       t: timeOf(i + k),
@@ -496,19 +479,18 @@ async function runSend(args: string[]) {
       ...(p.crowd ? { crowd: p.crowd, crowdAt: timeOf(p.crowdFrom ?? i + k) } : {}),
     }));
 
-    // Add one point timestamped 10 minutes in the future.
+    // One bad point with a time 10 minutes ahead of the phone's clock.
     if (noisy && i === 0) {
       batch.push({ t: new Date(lastTime + 10 * 60_000).toISOString(), lng: batch[0].lng, lat: batch[0].lat, speed: 0, acc: 8 });
     }
 
     if (!(await send(batch))) { process.exitCode = 1; return; }
 
-    // Simulate resending a batch after signal loss.
+    // A phone that lost signal resends the same batch.
     if (noisy && i === 0) {
       if (!(await send(batch))) { process.exitCode = 1; return; }
     }
 
-    // Simulate the crew starting the return trip during the wait.
     if (tap && !tapped && i + BATCH_SIZE >= tripCount + 3) {
       tapped = true;
       const r = await api('POST', '/assignments/return', token);
@@ -521,7 +503,13 @@ async function runSend(args: string[]) {
     if ((i / BATCH_SIZE) % 20 === 0) {
       console.log(`  ${totals.saved} saved so far (${(points[i].progress * 100).toFixed(0)}% of the road)`);
     }
-    if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
+    if (live) {
+      const due = liveWallStart + (i / BATCH_SIZE + 1) * BATCH_SIZE * TICK_SEC * 1000;
+      const wait = due - Date.now();
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    } else if (delayMs > 0) {
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
   }
 
   console.log(
@@ -534,13 +522,34 @@ async function runSend(args: string[]) {
       `terminal events ${totals.events}, automatic flips ${totals.flips}.`,
   );
   console.log('The shift stays started; run createshift.ts before the next run.');
+
+  if (live && stopAt > 0) {
+    const last = points[points.length - 1];
+    console.log(`Holding still at ${(last.progress * 100).toFixed(0)}% of the road. Press Ctrl+C to stop.`);
+    let idx = points.length;
+    for (;;) {
+      const due = liveWallStart + (idx / BATCH_SIZE) * BATCH_SIZE * TICK_SEC * 1000;
+      const wait = due - Date.now();
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      const batch = [0, 1, 2].map((k) => ({
+        t: timeOf(idx + k),
+        lng: Number(last.lng.toFixed(6)),
+        lat: Number(last.lat.toFixed(6)),
+        speed: 0,
+        acc: last.accuracy,
+      }));
+      idx += BATCH_SIZE;
+      if (!(await send(batch))) { process.exitCode = 1; return; }
+    }
+  }
 }
 
 async function main() {
-  // Print points: npx tsx src/scripts/fake-bus.ts 61 "toward Legehar" [delayMs]
-  // Send points: npx tsx src/scripts/fake-bus.ts --send [options]
-  
-  
+  // Print only:  npx tsx src/scripts/fake-bus.ts 61 "toward Legehar" [delayMs]
+  // Send:        npx tsx src/scripts/fake-bus.ts --send [--user bus1] [--pass test1234] [--delay 200]
+  //              [--noisy] [--clock-offset-min 90] [--wait-min 7] [--stay] [--detour] [--return]
+  //              [--tap] [--crowd full] [--crowd-trip full] [--stop-at 40] [--wrong-way] [--off-path]
+  //              [--live]   (real time: one batch every 30 s; with --stop-at it holds until Ctrl+C)
   const args = process.argv.slice(2);
   if (args.includes('--send')) await runSend(args);
   else await runPrint(args);
