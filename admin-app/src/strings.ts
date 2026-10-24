@@ -1,0 +1,85 @@
+export const t = {
+  appName: 'Bus Admin',
+
+  // Nav
+  live: 'Live',
+  vehicles: 'Vehicles',
+  drivers: 'Drivers',
+  shifts: 'Shifts',
+  logout: 'Log out',
+
+  // Auth
+  username: 'Username',
+  password: 'Password',
+  login: 'Log in',
+  loggingIn: 'Logging in…',
+  loginTitle: 'Admin Login',
+  enterBoth: 'Enter your username and password.',
+
+  // General
+  loading: 'Loading…',
+  save: 'Save',
+  saving: 'Saving…',
+  cancel: 'Cancel',
+  add: 'Add',
+  edit: 'Edit',
+  delete: 'Delete',
+  deleting: 'Deleting…',
+  end: 'End',
+  ending: 'Ending…',
+  confirmDelete: 'Delete this?',
+  confirmEnd: 'End this shift?',
+  yes: 'Yes',
+  no: 'No',
+  noData: 'Nothing here yet.',
+  error: 'Error',
+  retry: 'Retry',
+  refresh: 'Refresh',
+  actions: 'Actions',
+
+  // Live screen
+  liveTitle: 'Live buses',
+  plate: 'Plate',
+  route: 'Route',
+  direction: 'Direction',
+  status: 'Status',
+  crowding: 'Crowding',
+  lastPing: 'Last ping',
+  warnings: 'Warnings',
+  noBuses: 'No buses running right now.',
+  secondsAgo: (n: number) => `${n}s ago`,
+  minutesAgo: (n: number) => `${n}m ago`,
+
+  // Vehicles
+  vehiclesTitle: 'Vehicles',
+  addVehicle: 'Add vehicle',
+  editVehicle: 'Edit vehicle',
+  plateLabel: 'Plate number',
+  plateRequired: 'Plate is required.',
+
+  // Drivers
+  driversTitle: 'Drivers',
+  addDriver: 'Add driver',
+  editDriver: 'Edit driver',
+  nameLabel: 'Full name',
+  usernameLabel: 'Username',
+  passwordLabel: 'Password',
+  newPasswordLabel: 'New password',
+  resetPassword: 'Reset password',
+  nameRequired: 'Name is required.',
+  usernameRequired: 'Username is required.',
+  passwordRequired: 'Password is required.',
+
+  // Shifts
+  shiftsTitle: 'Shifts',
+  createShift: 'Create shift',
+  driverLabel: 'Driver',
+  vehicleLabel: 'Vehicle',
+  routeDirectionLabel: 'Route / direction',
+  pickDriver: '— pick driver —',
+  pickVehicle: '— pick vehicle —',
+  pickDirection: '— pick direction —',
+  shiftStatus: 'Status',
+  startedAt: 'Started',
+  notStarted: 'Not started',
+};
