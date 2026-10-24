@@ -5,10 +5,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: Rahel
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in backend/.env}
       POSTGRES_DB: bus_tracker
     ports:
-      - "5434:5432"
+      - "5434:5432" # 5434 on your computer, so it does not clash with a local PostgreSQL
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,10 +16,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
-    
+
   backend:
     build: ./backend
-    container_name: bus_backendd
+    container_name: bus_backend
     restart: unless-stopped
     depends_on:
       db:
@@ -30,6 +30,7 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
       ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      NIGHTLY_JOBS: ${NIGHTLY_JOBS:-on}
     ports:
       - "3000:3000"
 
