@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-// Calls `fn` now and then every `seconds`. Pauses while the tab is hidden and
-// runs again at once when the tab comes back. A failed refresh keeps the old data.
+
 export function usePolling<T>(fn: () => Promise<T>, seconds: number) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<Error | null>(null);

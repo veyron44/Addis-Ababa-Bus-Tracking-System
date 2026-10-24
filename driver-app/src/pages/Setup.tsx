@@ -10,8 +10,7 @@ function locationError(err: GeolocationPositionError): string {
   return t.timeout;
 }
 
-// The Day 0 check page: is the backend reachable, and does the phone give a position.
-// Open it at /setup. Handy again whenever a tunnel address changes.
+
 export default function Setup() {
   const [health, setHealth] = useState<Health | null>(null);
   const [healthError, setHealthError] = useState<string | null>(null);

@@ -8,7 +8,6 @@ import Shift from './pages/Shift';
 import Running from './pages/Running';
 import Setup from './pages/Setup';
 
-// Lets a screen through only when the saved token still works.
 function RequireLogin({ children }: { children: ReactNode }) {
   const [state, setState] = useState<'checking' | 'ok' | 'no'>(getToken() ? 'checking' : 'no');
 
@@ -20,7 +19,6 @@ function RequireLogin({ children }: { children: ReactNode }) {
     getMe()
       .then(() => setState('ok'))
       .catch((e: { status?: number }) => {
-        // 401 means the token is bad. Other errors (no network) keep the driver in.
         setState(e.status === 401 ? 'no' : 'ok');
       });
   }, []);

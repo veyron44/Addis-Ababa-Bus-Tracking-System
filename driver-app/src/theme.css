@@ -93,3 +93,106 @@ h1 { font-size: 26px; margin: 8px 0 16px; }
   text-decoration: underline;
   min-height: 44px;
 }
+
+/* ---- Day 2: Running screen ---- */
+
+.gps-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--card);
+  margin-bottom: 12px;
+}
+.gps-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.gps-dot.green { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+.gps-dot.amber { background: #f59e0b; box-shadow: 0 0 6px #f59e0b88; }
+.gps-dot.red   { background: #ef4444; box-shadow: 0 0 6px #ef444488; }
+.gps-text { font-size: 15px; color: var(--muted); }
+.gps-counts {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.gps-counts strong { color: var(--text); }
+
+.keep-on {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 12px;
+  padding: 6px 0;
+}
+
+/* Crowding buttons: a row of three equally sized, color-coded buttons. */
+.crowd-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.crowd-btn {
+  min-height: 56px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.crowd-btn:disabled { opacity: 0.5; }
+.crowd-btn.seats  { background: #16a34a; }
+.crowd-btn.standing { background: #d97706; }
+.crowd-btn.full   { background: #dc2626; }
+.crowd-btn.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--text); }
+
+/* Terminal-only action buttons */
+.terminal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.terminal-btn {
+  min-height: 52px;
+  border: 0;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+.terminal-btn:disabled { opacity: 0.5; }
+.terminal-btn.depart { background: var(--accent); }
+.terminal-btn.returnTrip { background: #7c3aed; }
+
+/* Warning line at the top */
+.warning-bar {
+  background: #fff4e5;
+  color: #8a4b00;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/* Confirm dialog within the card */
+.confirm-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.confirm-card p { margin: 0 0 12px; font-size: 18px; }
+.confirm-card .btn { margin: 4px; width: auto; min-width: 120px; }
+

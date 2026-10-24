@@ -1,12 +1,11 @@
-// All calls to the backend go through this one function.
 import { clearToken, getToken } from './lib/token';
-import type { ShiftStatus } from './lib/shift';
+import type { ShiftStatus, CrowdingCode } from './lib/shift';
+import type { GpsPoint, PingReply } from './lib/sender';
 
 const BASE: string = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 
 export const apiBase = BASE;
 
-// An error that remembers the HTTP status, so screens can tell 404 from 409.
 export class ApiError extends Error {
   status: number;
   constructor(message: string, status: number) {
@@ -33,18 +32,16 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    // A wrong or expired token: forget it, so the next screen sends the driver to Login.
     if (res.status === 401 && token) clearToken();
     throw new ApiError((body as { error?: string }).error ?? `Request failed (${res.status})`, res.status);
   }
   return body as T;
 }
 
-// ---- Health (Day 0 check page) ----
 export type Health = { status: string; database: string };
 export const getHealth = () => api<Health>('/health');
 
-// ---- Login ----
+// Login 
 export type LoginResult = { token: string; expiresAt: string; driver: { id: number; name: string } };
 
 export const login = (username: string, password: string) =>
@@ -55,7 +52,7 @@ export const login = (username: string, password: string) =>
 
 export const getMe = () => api<{ driver: { id: number; name: string } }>('/auth/me');
 
-// ---- Shift ----
+// Shift 
 export type Assignment = {
   id: number;
   status: ShiftStatus;
@@ -64,6 +61,9 @@ export type Assignment = {
   directionName: string;
   routeDirectionId: number;
   startedAt: string | null;
+  crowding: CrowdingCode;
+  crowdingSetAt: string | null;
+  crowdingView: { code: CrowdingCode; label: string; ageSec: number | null } | null;
 };
 
 export type Direction = {
@@ -85,3 +85,27 @@ export const selectDirection = (routeDirectionId: number) =>
 
 export const startShift = () => api<{ assignment: Assignment }>('/assignments/start', { method: 'POST' });
 export const endShift = () => api<{ ended: boolean }>('/assignments/end', { method: 'POST' });
+
+//  GPS pings
+export const sendPings = (sentAt: string, points: GpsPoint[]) =>
+  api<PingReply>('/pings', {
+    method: 'POST',
+    body: JSON.stringify({ sentAt, points }),
+  });
+
+// Crowding, Departing, Return 
+export const setCrowding = (status: CrowdingCode) =>
+  api<{ assignment: Assignment }>('/assignments/crowding', {
+    method: 'POST',
+    body: JSON.stringify({ status }),
+  });
+
+export const departingNow = (crowding?: CrowdingCode) =>
+  api<{ changed: boolean; assignment: Assignment }>('/assignments/departing', {
+    method: 'POST',
+    body: JSON.stringify(crowding ? { crowding } : {}),
+  });
+
+export const startReturn = () =>
+  api<{ changed: boolean; assignment: Assignment }>('/assignments/return', { method: 'POST' });
+

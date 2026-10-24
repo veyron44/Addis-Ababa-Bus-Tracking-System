@@ -52,12 +52,34 @@ export const t = {
   offline: 'No connection. Retrying.',
   hello: 'Hello',
 
-  // Running (placeholder until GPS is added)
+  // Running (Day 2: GPS sender)
   running: 'Shift running',
-  runningNote: 'Sending your position starts on the next step.',
+  keepScreenOn: 'Keep this screen open while driving.',
+  gpsLabel: 'GPS',
+  sent: 'Sent',
+  waiting: 'Waiting',
   endShift: 'End shift',
   endAsk: 'End this shift?',
   ending: 'Ending...',
   sure: 'Yes, end it',
   no2: 'No',
+
+  // Crowding buttons
+  seatsAvailable: 'Seats available',
+  standingOnly: 'Standing only',
+  full: 'Full',
+
+  // Terminal-only actions
+  departingNow: 'Departing now',
+  startReturn: 'Start return trip',
+
+  // GPS light
+  gpsGreen: 'Sending',
+  gpsAmber: 'Waiting for GPS...',
+  gpsRed: 'No GPS',
+
+  // Sender stopped
+  senderStopped: 'Position sending stopped.',
+  goToShift: 'Go to shift',
 };
+
