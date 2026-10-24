@@ -40,3 +40,30 @@ export async function findLatestPositions(
   }
   return out;
 }
+
+// The road as a list of [lat, lng] points for the map, with the places of its stops.
+// The line is simplified to about 3 m, so the answer stays small.
+export async function findRouteShape(routeDirectionId: number): Promise<{
+  line: [number, number][];
+  stops: Map<number, { lat: number; lng: number }>;
+}> {
+  const lineRes = await db.execute(sql`
+    SELECT ST_AsGeoJSON(ST_SimplifyPreserveTopology(path, 0.00003)) AS geojson
+    FROM route_directions
+    WHERE id = ${routeDirectionId} AND path IS NOT NULL`);
+  const geojson = (lineRes.rows as any[])[0]?.geojson;
+  const coords: [number, number][] = geojson ? JSON.parse(geojson).coordinates : [];
+
+  const stopRes = await db.execute(sql`
+    SELECT s.id, ST_Y(s.location) AS lat, ST_X(s.location) AS lng
+    FROM route_stops rs
+    JOIN stops s ON s.id = rs.stop_id
+    WHERE rs.route_direction_id = ${routeDirectionId}`);
+  const stops = new Map<number, { lat: number; lng: number }>();
+  for (const r of stopRes.rows as any[]) {
+    stops.set(Number(r.id), { lat: Number(r.lat), lng: Number(r.lng) });
+  }
+
+  // GeoJSON is [lng, lat]. The map wants [lat, lng].
+  return { line: coords.map(([lng, lat]) => [lat, lng] as [number, number]), stops };
+}

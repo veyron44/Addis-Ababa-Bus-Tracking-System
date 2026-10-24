@@ -1,4 +1,4 @@
-import { findDirection, findLatestPositions } from './live.repository';
+import { findDirection, findLatestPositions, findRouteShape } from './live.repository';
 import { findRunningBuses, findHiddenAssignmentIds } from '../arrivals/arrivals.repository';
 import { getStopsOnPath } from '../eta/eta.repository';
 import { describeBus } from '../eta/eta.service';
@@ -18,11 +18,13 @@ export async function getRouteLive(routeDirectionId: number, stopId: number | nu
 
   const path = await getStopsOnPath(routeDirectionId);
   if (!path) {
-    return { kind: 'ok', data: { route: { ...direction, lengthM: null }, stops: [], buses: [] } };
+    return { kind: 'ok', data: { route: { ...direction, lengthM: null, line: [] }, stops: [], buses: [] } };
   }
   if (stopId !== null && !path.stops.some((s) => s.stopId === stopId)) {
     return { kind: 'stop_not_on_route' };
   }
+
+  const shape = await findRouteShape(routeDirectionId);
 
   const now = new Date();
   const running = await findRunningBuses([routeDirectionId]);
@@ -56,13 +58,15 @@ export async function getRouteLive(routeDirectionId: number, stopId: number | nu
   return {
     kind: 'ok',
     data: {
-      route: { ...direction, lengthM: Math.round(path.lenM) },
+      route: { ...direction, lengthM: Math.round(path.lenM), line: shape.line },
       stops: path.stops.map((s) => ({
         stopId: s.stopId,
         stopOrder: s.stopOrder,
         placeName: s.placeName,
         side: s.side,
         progress: s.progress,
+        lat: shape.stops.get(s.stopId)?.lat ?? null,
+        lng: shape.stops.get(s.stopId)?.lng ?? null,
       })),
       buses,
     },
